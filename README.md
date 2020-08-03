@@ -10,7 +10,7 @@ sudo apt-get install git git init git add . git commit -m ‘____’ git push or
 
 • Individual contribution: The assignment was completed individually.
 
-• Features: The user will be able to input desired allocated resources for the threads. If the user input '*', it will output allocation, available, needed and maximum matrixes for the resources and threads.
+• Features: The user will be able to input desired allocated resources for the threads. If the user input '*', it will output allocation, available, needed and maximum matrixes for the resources and threads. The "Run" command will output a safe sequence for the threads.
 
 • Tests: Since user input is required, various inputs were tested to detect any errors.
 
