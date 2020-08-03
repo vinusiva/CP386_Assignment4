@@ -7,14 +7,6 @@ Cp386*/
 #include <string.h>
 #include <pthread.h>
 #include <sys/stat.h>
-#include <time.h>
-
-typedef struct process //represents a single thread, you can add more members if required
-{
-	int id;
-	int state;
-
-} Process;
 
 
 int main(int argc, char *argv[])
@@ -90,7 +82,6 @@ int main(int argc, char *argv[])
 	}
 
 
-
 	char command[256];
 	int i_resource;
 	char c_resource;
@@ -101,15 +92,6 @@ int main(int argc, char *argv[])
 
         //Need Matrix
         int needMatrix[n][4];
-//        for(int k=0; k<n; k++){
-  //           for(int j=0; j<n-1; j++){
-    //         needMatrix[k][j] = maxArray[k][j]- alloc[k][j];}}
-
-        //Available Matrix
-        int avaiMatrix[n][4];
-//        for(int k=0; k<n; k++){
-  //           for(int j=0; j<n-1; j++){
-    //         avaiMatrix[k][j] = maxArray[k][j]- alloc[k][j] - needMatrix[k][j];}}
 
 	while (command != "" ){
 
@@ -117,14 +99,24 @@ int main(int argc, char *argv[])
 		c_resource = command[3];
 		i_resource = c_resource - '0' ;
 		//printf("%d",(command[5] - '0'));
-		if (maxArray[i_resource][0] >= (command[5] - '0') && maxArray[i_resource][1] >= (command[7] - '0') && maxArray[i_resource][2] >= (command[9] - '0') && maxArray[i_resource][3] >= (command[11] - '0')){
+		if (avaiRes[0] >= (command[5] - '0') && avaiRes[1] >= (command[7] - '0') && avaiRes[2] >= (command[9] - '0') && avaiRes[3] >= (command[11] - '0')){
 			alloc[i_resource][0] = (command[5]- '0');
 			alloc[i_resource][1] = (command[7]- '0');
 			alloc[i_resource][2] = (command[9]- '0');
 			alloc[i_resource][3] = (command[11]- '0');
 			printf("Request Satisfied\n");}
-		else {printf("Request Denied\n");}
-	}
+		else {printf("Request Denied\n");}}
+	else if (command[0]=='R' && command[1]=='L'){
+                c_resource = command[3];
+                i_resource = c_resource - '0' ;
+                //printf("%d",(command[5] - '0'));
+                if (alloc[i_resource][0] >= (command[5] - '0') && alloc[i_resource][1] >= (command[7] - '0') && alloc[i_resource][2] >= (command[9] - '0') && alloc[i_resource][3] >= (command[11] - '0')){
+                        alloc[i_resource][0] -= (command[5]- '0');
+                        alloc[i_resource][1] -= (command[7]- '0');
+                        alloc[i_resource][2] -= (command[9]- '0');
+                        alloc[i_resource][3] -= (command[11]- '0');
+                        printf("Request Satisfied\n");}
+                else {printf("Request Denied\n");}}
 	else if(command[0]=='*'){
                 printf("\nAllocation Matrix:\n");
 		for(int k=0; k<n; k++){
@@ -151,11 +143,9 @@ int main(int argc, char *argv[])
 
 		printf("\nAvailable  Matrix:\n");
 
-		for(int k=0; k<n; k++){
-            	for(int j=0; j<n-1; j++){
-             		avaiMatrix[k][j] = atoi(argv[j+1])- maxArray[k][j];
-                        printf("%d ",avaiMatrix[k][j]);}
-			printf("\n");}
+		for(int k=0; k<n-1; k++){
+             		//avaiMatrix[k][j] = atoi(argv[j+1])- maxArray[k][j];
+                        printf("%d ",avaiRes[k]);} printf("\n");
 
 	}
 	else if (command[0]=='R' && command[1]=='u') {
@@ -163,33 +153,29 @@ int main(int argc, char *argv[])
                 for(int j=0; j<n-1; j++){
                         needMatrix[k][j] =  maxArray[k][j]-alloc[k][j];}}
 
-
-		for(int k=0; k<n; k++){
-                for(int j=0; j<n-1; j++){
-                        avaiMatrix[k][j] = atoi(argv[j+1])- maxArray[k][j];}}
-                        //printf("%d ",avaiMatrix[k][j]);}
-                        //printf("\n");}
-
 		int complete[5];
 		int seq[5];
 		int s = 0;
 		int turn = 0 ;
+
 		for (int i = 0; i < n; i++)
                         complete[i]=0;
+
 
 		for(int i=0; i<n; i++){
 			for (int j = 0; j < n; j++) {
 			if (complete[j]==0){
 				turn = 0;
 				for (int k = 0;  k < n-1;k++){
-				if (needMatrix[j][k]>avaiRes[j]) {
+				if (needMatrix[j][k]>avaiRes[k]) {
 					turn=1;
 					break;}
 				}
 			if  (turn==0){
-				seq[s++]=j;
+				seq[s]=j;
+				s++;
 				for (int l = 0; l < n-1; l++){
-					avaiRes[j] = avaiRes[j] + needMatrix[j][l];}
+					avaiRes[l] = avaiRes[l] + alloc[j][l];}
 				complete[j]= 1 ;}
 
 				}
@@ -198,8 +184,11 @@ int main(int argc, char *argv[])
 
 		printf("Safe Sequence is:<" );
                 for (int l = 0; l < n; l++)
-	                printf(" %d, ", seq[l]);
+	                printf(" %d ", seq[l]);
 		printf(">\nNow going to executing the threads:\n\n" );
+		for(int j=0; j<n-1; j++){
+			avaiRes[j] = atoi(argv[j+1]);}
+
 		for (int l = 0; l < n; l++){
 			printf("\n--> Customer/Thread %d", seq[l]);
 
@@ -213,12 +202,13 @@ int main(int argc, char *argv[])
 
 			printf("\n\tAvailable resources: ");
                         for(int j=0; j<n-1; j++){
-                                printf("%d ", avaiMatrix[l][j]);}
+				printf("%d ", avaiRes[j]);}
 
 			printf("\n\tThread has started\n\tThread has finished\n\tThread is releasing resources");
 			printf("\n\tNew Available: ");
                         for(int j=0; j<n-1; j++){
-                                printf("%d ", alloc[l][j]+ avaiMatrix[l][j]);}
+				avaiRes[j] +=  alloc[l][j] ;
+                                printf("%d ", avaiRes[j]);}
 
 			}
 		printf("\n");
